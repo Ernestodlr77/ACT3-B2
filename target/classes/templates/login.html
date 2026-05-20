@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexión - Smartphone Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; background: #fff; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .side-banner { background: #0f172a; color: #fff; display: flex; flex-direction: column; justify-content: center; padding: 4rem; }
+        .login-section { display: flex; align-items: center; justify-content: center; padding: 3rem; }
+        .form-control { padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid #cbd5e1; }
+        .form-control:focus { border-color: #0f172a; box-shadow: 0 0 0 4px rgba(15,23,42,0.1); }
+        .btn-dark-ui { background: #0f172a; color: white; border-radius: 10px; padding: 0.75rem; border: none; width: 100%; font-weight: 500; }
+        .btn-dark-ui:hover { background: #1e293b; }
+    </style>
+</head>
+<body>
+<div class="container-fluid p-0 h-100 position-absolute">
+    <div class="row g-0 h-100">
+        <div class="col-lg-6 side-banner d-none d-lg-flex">
+            <h1 class="display-4 fw-bold mb-3">Celulares & Co.</h1>
+            <p class="fs-5 text-muted">Panel de control unificado para inventario de smartphones, control de garantías, clientes y reportes de facturación.</p>
+        </div>
+        <div class="col-lg-6 login-section">
+            <div style="width: 100%; max-width: 360px;">
+                <h3 class="fw-bold mb-1 text-dark">Ingresar al Sistema</h3>
+                <p class="text-secondary mb-4">Digita tus credenciales autorizadas.</p>
+
+                <div th:if="${param.error}" class="alert alert-danger p-2 small">Usuario o clave inválidos.</div>
+                <div th:if="${param.logout}" class="alert alert-success p-2 small">Cierre de sesión exitoso.</div>
+
+                <form th:action="@{/perform-login}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-semibold">USERNAME</label>
+                        <input type="text" name="username" class="form-control" placeholder="ej. amartinez" required autofocus>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-semibold">CONTRASEÑA</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-dark-ui">Autenticar Entrada</button>
+                </form>
+                <div class="text-center mt-4">
+                    <a th:href="@{/registro}" class="text-decoration-none text-dark small fw-semibold">¿Nuevo gestor? Crea una cuenta aquí</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

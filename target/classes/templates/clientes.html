@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes - Ventas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --sidebar-w: 260px; }
+        body { background: #f8fafc; font-family: system-ui, sans-serif; }
+        .sidebar { width: var(--sidebar-w); position: fixed; top: 0; bottom: 0; left: 0; background: #0f172a; padding: 2rem 1.5rem; color: #fff; z-index: 100; }
+        .main-content { margin-left: var(--sidebar-w); padding: 3rem; }
+        .nav-link-custom { display: flex; align-items: center; gap: 10px; color: #94a3b8; padding: 0.75rem 1rem; border-radius: 10px; text-decoration: none; margin-bottom: 0.5rem; }
+        .nav-link-custom:hover, .nav-link-custom.active { background: #1e293b; color: #fff; }
+        .data-card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .table th { background: #f1f5f9; color: #475569; font-size: 0.85rem; text-transform: uppercase; }
+        .modal-content { border-radius: 20px; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar d-flex flex-column justify-content-between">
+    <div>
+        <div class="mb-5 px-2"><h4 class="fw-bold m-0" style="color: #6366f1;">SmartVentas</h4></div>
+        <nav>
+            <a href="/home" class="nav-link-custom">🏠 Inicio</a>
+            <a href="/web/productos" class="nav-link-custom">📦 Smartphones</a>
+            <a href="/web/clientes" class="nav-link-custom active">👥 Clientes</a>
+            <a href="/web/ventas" class="nav-link-custom">🧾 Ventas</a>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="data-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark m-0">Directorio de Clientes</h3>
+                <p class="text-muted small m-0">Registro fiscal y locación para facturación de equipos.</p>
+            </div>
+            <button class="btn btn-dark px-4" style="border-radius:10px;" onclick="abrirModal()">+ Añadir Cliente</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0">
+                <thead>
+                <tr>
+                    <th>DPI Comprador</th><th>Nombre Completo</th><th>Dirección de Destino</th><th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tablaClientes"></tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div class="modal fade" id="modalCliente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content p-3">
+            <div class="modal-header border-0"><h5 class="fw-bold m-0" id="modalTitulo">Nuevo Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form id="formCliente">
+                <div class="modal-body row g-3">
+                    <input type="hidden" id="dpiCliente">
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-muted">DPI / Documento</label>
+                        <input type="number" class="form-control" id="dpi" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold text-muted">Nombres</label>
+                        <input type="text" class="form-control" id="nombreCliente" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold text-muted">Apellidos</label>
+                        <input type="text" class="form-control" id="apellidoCliente" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-muted">Dirección Fiscal</label>
+                        <input type="text" class="form-control" id="direccion">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark px-4">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API = '/api/clientes';
+    let modal;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        modal = new bootstrap.Modal(document.getElementById('modalCliente'));
+        cargarClientes();
+    });
+
+    async function cargarClientes() {
+        const res = await fetch(API);
+        const datos = await res.json();
+        document.getElementById('tablaClientes').innerHTML = datos.map(c => `
+            <tr>
+                <td class="fw-bold text-secondary">${c.dpiCliente}</td>
+                <td>${c.nombreCliente} ${c.apellidoCliente}</td>
+                <td>${c.direccion || '📍 No registrada'}</td>
+                <td>
+                    <button class="btn btn-sm btn-light border me-1" onclick='editar(${JSON.stringify(c)})'>📝</button>
+                    <button class="btn btn-sm btn-light border text-danger" onclick="eliminar(${c.dpiCliente})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function abrirModal(c = null) {
+        document.getElementById('modalTitulo').textContent = c ? 'Actualizar Ficha Cliente' : 'Inscribir Cliente';
+        document.getElementById('dpiCliente').value = c?.dpiCliente || '';
+        document.getElementById('dpi').value = c?.dpiCliente || '';
+        document.getElementById('dpi').disabled = c ? true : false;
+        document.getElementById('nombreCliente').value = c?.nombreCliente || '';
+        document.getElementById('apellidoCliente').value = c?.apellidoCliente || '';
+        document.getElementById('direccion').value = c?.direccion || '';
+        modal.show();
+    }
+
+    function editar(c) { abrirModal(c); }
+
+    document.getElementById('formCliente').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const dpi = document.getElementById('dpiCliente').value;
+        const data = {
+            dpiCliente: parseInt(document.getElementById('dpi').value),
+            nombreCliente: document.getElementById('nombreCliente').value,
+            apellidoCliente: document.getElementById('apellidoCliente').value,
+            direccion: document.getElementById('direccion').value,
+            estado: 1
+        };
+        await fetch(dpi ? `${API}/${data.dpiCliente}` : API, {
+            method: dpi ? 'PUT' : 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        modal.hide();
+        cargarClientes();
+    });
+
+    async function eliminar(dpi) {
+        if (confirm('¿Dar de baja a este cliente?')) {
+            await fetch(`${API}/${dpi}`, { method: 'DELETE' });
+            cargarClientes();
+        }
+    }
+</script>
+</body>
+</html>

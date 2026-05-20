@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - Ventas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --sidebar-w: 260px; }
+        body { background: #f8fafc; font-family: system-ui, sans-serif; }
+        .sidebar { width: var(--sidebar-w); position: fixed; top: 0; bottom: 0; left: 0; background: #0f172a; padding: 2rem 1.5rem; color: #fff; z-index: 100; }
+        .main-content { margin-left: var(--sidebar-w); padding: 3rem; }
+        .nav-link-custom { display: flex; align-items: center; gap: 10px; color: #94a3b8; padding: 0.75rem 1rem; border-radius: 10px; text-decoration: none; margin-bottom: 0.5rem; }
+        .nav-link-custom:hover, .nav-link-custom.active { background: #1e293b; color: #fff; }
+        .data-card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .table th { background: #f1f5f9; color: #475569; font-size: 0.85rem; text-transform: uppercase; }
+        .modal-content { border-radius: 20px; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar d-flex flex-column justify-content-between">
+    <div>
+        <div class="mb-5 px-2"><h4 class="fw-bold m-0" style="color: #6366f1;">SmartVentas</h4></div>
+        <nav>
+            <a href="/home" class="nav-link-custom">🏠 Inicio</a>
+            <a href="/web/productos" class="nav-link-custom">📦 Smartphones</a>
+            <a href="/web/clientes" class="nav-link-custom">👥 Clientes</a>
+            <a href="/web/ventas" class="nav-link-custom">🧾 Ventas</a>
+            <a href="/web/usuarios" class="nav-link-custom active">⚙️ Gestión Global</a>
+        </nav>
+    </div>
+</div>
+
+<main class="main-content">
+    <div class="data-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-dark m-0">Consola de Operadores</h3>
+                <p class="text-muted small m-0">Control de credenciales, emails y asignación de roles jerárquicos.</p>
+            </div>
+            <button class="btn btn-dark px-4" style="border-radius:10px;" onclick="abrirModal()">+ Nuevo Operador</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0">
+                <thead>
+                <tr>
+                    <th>ID</th><th>Nombre de Gestor</th><th>Usuario</th><th>Email institucional</th><th>Privilegio</th><th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody id="tablaUsuarios"></tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div class="modal fade" id="modalUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content p-3">
+            <div class="modal-header border-0"><h5 class="fw-bold m-0" id="modalTitulo">Nuevo Gestor</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form id="formUsuario">
+                <div class="modal-body row g-3">
+                    <input type="hidden" id="codigoUsuario">
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold text-muted">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold text-muted">Apellido</label>
+                        <input type="text" class="form-control" id="apellido" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-muted">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-muted">Email</label>
+                        <input type="email" class="form-control" id="email">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-muted">Clave de Seguridad</label>
+                        <input type="password" class="form-control" id="password">
+                        <small class="text-muted text-lowercase" style="font-size:0.75rem;">Vacío si se desea mantener clave existente al editar.</small>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-muted">Rol Operativo</label>
+                        <select class="form-select" id="rol" required>
+                            <option value="USER">USER (Lectura / Facturación)</option>
+                            <option value="ADMIN">ADMIN (Control del Sistema)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-dark px-4">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API = '/api/usuarios';
+    let modal;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        modal = new bootstrap.Modal(document.getElementById('modalUsuario'));
+        cargarUsuarios();
+    });
+
+    async function cargarUsuarios() {
+        const res = await fetch(API);
+        const datos = await res.json();
+        document.getElementById('tablaUsuarios').innerHTML = datos.map(u => `
+            <tr>
+                <td class="text-muted">#${u.codigoUsuario}</td>
+                <td class="fw-bold">${u.nombre} ${u.apellido}</td>
+                <td>@${u.username}</td>
+                <td>${u.email || 'N/A'}</td>
+                <td><span class="badge ${u.rol === 'ADMIN' ? 'bg-dark text-white' : 'bg-light text-dark border'}">${u.rol}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-light border me-1" onclick='editar(${JSON.stringify(u)})'>📝</button>
+                    <button class="btn btn-sm btn-light border text-danger" onclick="eliminar(${u.codigoUsuario})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function abrirModal(u = null) {
+        document.getElementById('modalTitulo').textContent = u ? 'Editar Credenciales' : 'Registrar Nuevo Operador';
+        document.getElementById('codigoUsuario').value = u?.codigoUsuario || '';
+        document.getElementById('nombre').value = u?.nombre || '';
+        document.getElementById('apellido').value = u?.apellido || '';
+        document.getElementById('username').value = u?.username || '';
+        document.getElementById('email').value = u?.email || '';
+        document.getElementById('password').value = '';
+        document.getElementById('password').required = u ? false : true;
+        document.getElementById('rol').value = u?.rol || 'USER';
+        modal.show();
+    }
+
+    function editar(u) { abrirModal(u); }
+
+    document.getElementById('formUsuario').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('codigoUsuario').value;
+        const data = {
+            nombre: document.getElementById('nombre').value,
+            apellido: document.getElementById('apellido').value,
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            rol: document.getElementById('rol').value,
+            password: document.getElementById('password').value || null,
+            estado: 1
+        };
+        await fetch(id ? `${API}/${id}` : API, {
+            method: id ? 'PUT' : 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        modal.hide();
+        cargarUsuarios();
+    });
+
+    async function eliminar(id) {
+        if (confirm('¿Remover los accesos de este operador?')) {
+            await fetch(`${API}/${id}`, { method: 'DELETE' });
+            cargarUsuarios();
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso Restringido</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #0d0e12; color: #fff; font-family: system-ui, sans-serif; height: 100vh; overflow: hidden; }
+        .error-container { position: relative; max-width: 500px; padding: 3rem; background: #161920; border-radius: 24px; border: 1px solid #2a2f3d; }
+        .glitch-num { font-size: 7rem; font-weight: 800; line-height: 1; background: linear-gradient(45deg, #ff3366, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center">
+<div class="error-container text-center shadow-lg">
+    <div class="glitch-num mb-2">403</div>
+    <h3 class="fw-semibold mb-3">Área Restringida</h3>
+    <p class="text-muted mb-4">Tu cuenta no cuenta con las credenciales o el rol necesario para leer o alterar este módulo comercial.</p>
+    <a href="/home" class="btn px-4 py-2 text-white" style="background: #ff3366; border-radius: 10px;">Regresar a Base</a>
+</div>
+</body>
+</html>
