@@ -1,0 +1,5 @@
+Roles:
+ADMIN UNICO:
+admin2/123456
+
+Los demás que se puedan crear se crean automaticamente como usuarios y solo el admin puede cambiar su rol
